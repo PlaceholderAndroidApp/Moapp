@@ -6,6 +6,7 @@ Take photo and send it instantly to client's computer clipboard
 Milestones initial:
 - Install Eclipse + Android SDK
 - Run hello world on phone/emulator
+- Install git on PC (and Eclipse if you're bothered enough to do so)
 
 Milestones mobile:
 - Show camera on screen
