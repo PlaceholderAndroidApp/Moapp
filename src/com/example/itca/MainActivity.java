@@ -10,7 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class MainActivity extends Activity{ //implements SurfaceHolder.Callback{
+public class MainActivity extends Activity implements SurfaceHolder.Callback{
 
 	Camera camera;
 	SurfaceView surfaceView;
@@ -34,13 +34,14 @@ public class MainActivity extends Activity{ //implements SurfaceHolder.Callback{
 
 		// Debug Buttons XML hook
 		start = (Button) findViewById(R.id.btn_start);
+		stop = (Button) findViewById(R.id.btn_stop);
+		
+		// Start and Stop button function
 		start.setOnClickListener(new Button.OnClickListener() {
-
 			public void onClick(View arg0) {
 				start_camera();
 			}
 		});
-		stop = (Button) findViewById(R.id.btn_stop);
 		stop.setOnClickListener(new Button.OnClickListener() {
 			public void onClick(View arg0) {
 				stop_camera();
@@ -57,9 +58,14 @@ public class MainActivity extends Activity{ //implements SurfaceHolder.Callback{
 		
 		// Debug SurfaceView XML hook
 		surfaceView = (SurfaceView) findViewById(R.id.surfaceView1);
+
+		// SurfaceHolder stuffs
 		surfaceHolder = surfaceView.getHolder();
 		//surfaceHolder.addCallback(this);
 		surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+		surfaceHolder.setFixedSize(540, 960);
+		//surfaceView.setRotation(90);
+		
 	}
 	
 	/*
@@ -119,6 +125,7 @@ public class MainActivity extends Activity{ //implements SurfaceHolder.Callback{
 			Log.e(tag, "init_camera: " + e);
 			return;
 		}
+		camera.setDisplayOrientation(90);
 		Camera.Parameters param;
 		param = camera.getParameters();
 		// modify parameter
@@ -132,6 +139,12 @@ public class MainActivity extends Activity{ //implements SurfaceHolder.Callback{
 			Log.e(tag, "init_camera: " + e);
 			return;
 		}
+		
+		// Debug stuff
+		debugtxt1.setText("Width: ");
+		debugtxt11.setText(""+param.getPreviewSize().width);
+		debugtxt2.setText("Height: ");
+		debugtxt21.setText(""+param.getPreviewSize().height);
 	}
 
 	private void stop_camera() {
@@ -139,7 +152,7 @@ public class MainActivity extends Activity{ //implements SurfaceHolder.Callback{
 		camera.release();
 	}
 	
-	/*
+	
 	public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2, int arg3) {
 		// TODO Auto-generated method stub
 	}
@@ -151,5 +164,5 @@ public class MainActivity extends Activity{ //implements SurfaceHolder.Callback{
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		// TODO Auto-generated method stub
 	}
-	*/
+	
 }

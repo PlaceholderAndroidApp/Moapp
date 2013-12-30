@@ -18,16 +18,8 @@
         android:id="@+id/btn_stop"
         android:layout_width="wrap_content"
         android:layout_height="90dp"
-        android:layout_alignBaseline="@+id/btn_start"
-        android:layout_alignBottom="@+id/btn_start"
         android:layout_toRightOf="@+id/btn_start"
         android:text="Stop" />
-
-    <SurfaceView
-        android:id="@+id/surfaceView1"
-        android:layout_below="@+id/btn_start"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
 
     <TextView
         android:id="@+id/textView1"
@@ -84,5 +76,12 @@
         android:layout_alignLeft="@+id/textView5"
         android:text="Debug21"
         android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <SurfaceView
+        android:id="@+id/surfaceView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/btn_start"
+        android:layout_below="@+id/btn_start" />
 
 </RelativeLayout>
