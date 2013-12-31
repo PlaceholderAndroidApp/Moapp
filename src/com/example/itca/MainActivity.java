@@ -7,9 +7,11 @@ import java.io.IOException;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.ShutterCallback;
+import android.media.ExifInterface;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -80,9 +82,28 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 					@Override
 					public void onPictureTaken(byte[] data, Camera camera) {
 						
-						File temp_picture_dir = new File(Environment.DIRECTORY_DOWNLOADS, "test");
+						File temp_picture_path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+						File temp_picture_name = new File(temp_picture_path, "test.jpg");
+						
+						ExifInterface rotate_temp_image = null;
+						
+						try {
+							rotate_temp_image = new ExifInterface(temp_picture_name.toString());
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+						
+						rotate_temp_image.setAttribute(ExifInterface.TAG_ORIENTATION, "5");
+						try {
+							rotate_temp_image.saveAttributes();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+						
+						temp_picture_path.mkdirs();
+						
 						try{
-							FileOutputStream fos = new FileOutputStream(temp_picture_dir);
+							FileOutputStream fos = new FileOutputStream(temp_picture_name);
 							fos.write(data);
 							fos.close();
 						} catch(Exception e){
@@ -90,9 +111,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 							//toast.show();
 						}
 						
+						
 					}
 				});
-				camera.startPreview();
+				//camera.startPreview();
 			}
 		});
 		
@@ -193,11 +215,24 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 		}
 		
 		// Debug stuff
+		/*
 		debugtxt1.setText("Width: ");
 		debugtxt11.setText("" + param.getPreviewSize().width);
 		debugtxt2.setText("Height: ");
 		debugtxt21.setText("" + param.getPreviewSize().height);
-
+		*/
+		debugtxt1.setText("Orientation: ");
+		switch(getResources().getConfiguration().orientation){
+		case 1:
+			debugtxt11.setText("Potrait");
+			break;
+		case 2:
+			debugtxt11.setText("Landscape");
+			break;
+		default:
+			break;
+		}
+		
 	    return qOpened;    
 	}
 
