@@ -7,13 +7,16 @@ import java.io.IOException;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.ShutterCallback;
 import android.media.ExifInterface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.SurfaceHolder;
@@ -23,144 +26,75 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity implements SurfaceHolder.Callback {
+public class MainActivity extends Activity {
 
 	Camera camera;
-	SurfaceView surfaceView;
-	SurfaceHolder surfaceHolder;
 	TextView debugtxt1;
 	TextView debugtxt2;
 	TextView debugtxt11;
 	TextView debugtxt21;
 	Button captureButton, start;
-	Context app_context;
-
+	Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+	Context app_context = this;
+	
+	File temp_picture_path = Environment
+			.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+	File temp_picture_filename;
+	
+	private static final int CAPTURE_IMAGE_REQUEST_CODE = 133;
 
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		app_context = this;
-		
 		start = (Button) findViewById(R.id.btn_start);
-		
+
 		// Start and Stop button function
 		start.setOnClickListener(new Button.OnClickListener() {
 			public void onClick(View arg0) {
-				if(safeCameraOpen()){
-					Toast.makeText(app_context, "Success", Toast.LENGTH_SHORT).show();
-				} else {
-					Toast.makeText(app_context, "Failed", Toast.LENGTH_SHORT).show();
-				}
+				temp_picture_filename = new File(temp_picture_path, "test.jpg");
+				intent.putExtra(MediaStore.EXTRA_OUTPUT,
+						Uri.fromFile(temp_picture_filename));
+
+				startActivityForResult(intent, CAPTURE_IMAGE_REQUEST_CODE);
 			}
 		});
-		
-		// Debug Buttons XML hook
-		captureButton = (Button) findViewById(R.id.btn_capture);
-
-		// Capture button function
-		captureButton.setOnClickListener(new Button.OnClickListener() {
-			public void onClick(View arg0) {
-				camera.takePicture(new ShutterCallback() {
-
-					@Override
-					public void onShutter() {
-						//toast.setText("Toast showed successfully");
-						//toast.show();
-					}
-				}, new PictureCallback() {
-
-					// RAW DATA leave it blank for now
-					@Override
-					public void onPictureTaken(byte[] data, Camera camera) {
-						// TODO Auto-generated method stub
-					}
-				}, null, new PictureCallback() {
-
-					// JPEG DATA
-					@Override
-					public void onPictureTaken(byte[] data, Camera camera) {
-						
-						File temp_picture_path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-						File temp_picture_name = new File(temp_picture_path, "test.jpg");
-						
-						ExifInterface rotate_temp_image = null;
-						
-						try {
-							rotate_temp_image = new ExifInterface(temp_picture_name.toString());
-						} catch (IOException e1) {
-							e1.printStackTrace();
-						}
-						
-						rotate_temp_image.setAttribute(ExifInterface.TAG_ORIENTATION, "5");
-						try {
-							rotate_temp_image.saveAttributes();
-						} catch (IOException e1) {
-							e1.printStackTrace();
-						}
-						
-						temp_picture_path.mkdirs();
-						
-						try{
-							FileOutputStream fos = new FileOutputStream(temp_picture_name);
-							fos.write(data);
-							fos.close();
-						} catch(Exception e){
-							//toast.setText("Toast showed successfully, but something is wrong with the picture");
-							//toast.show();
-						}
-						
-						
-					}
-				});
-				//camera.startPreview();
-			}
-		});
-		
-		
-		// Debug TextView XML hook
-		debugtxt1 = (TextView) findViewById(R.id.textView1);
-		debugtxt2 = (TextView) findViewById(R.id.textView2);
-		debugtxt11 = (TextView) findViewById(R.id.textView5);
-		debugtxt21 = (TextView) findViewById(R.id.textView6);
-
-		// Debug SurfaceView XML hook
-		surfaceView = (SurfaceView) findViewById(R.id.surfaceView1);
-
-		// SurfaceHolder stuffs
-		surfaceHolder = surfaceView.getHolder();
-		surfaceHolder.addCallback(this);
-		surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-		surfaceHolder.setFixedSize(540, 960);
-
-		/*
-		if(safeCameraOpen()){
-			Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show();
-		} else {
-			Toast.makeText(this, "Failed", Toast.LENGTH_SHORT).show();
-		}
-		*/
 	}
-	
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == CAPTURE_IMAGE_REQUEST_CODE) {
+			if (resultCode == RESULT_OK) {
+				// Image captured and saved to fileUri specified in the Intent
+				Toast.makeText(this, "Image saved to:\n" + Uri.fromFile(temp_picture_filename),
+						Toast.LENGTH_LONG).show();
+			} else if (resultCode == RESULT_CANCELED) {
+				// User cancelled the image capture
+				Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show();
+			} else {
+				// Image capture failed, advise user
+				Toast.makeText(this, "Failed", Toast.LENGTH_LONG).show();
+			}
+		}
+
+	}
+
 	@Override
 	protected void onStart() {
 		super.onStart();
 		// The activity is about to become visible.
 	}
 
-	
 	@Override
 	protected void onResume() {
 		super.onResume();
 		// The activity has become visible (it is now "resumed").
 	}
-	
-	/*
+
 	@Override
 	protected void onPause() {
 		super.onPause();
-		stop_camera_secure();
 		// Another activity is taking focus (this activity is about to be
 		// "paused").
 	}
@@ -168,91 +102,13 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 	@Override
 	protected void onStop() {
 		super.onStop();
-		stop_camera_secure();
 		// The activity is no longer visible (it is now "stopped")
 	}
-	*/
-	
+
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		if (camera!=null)
-	    {
-	        camera.stopPreview();
-	        camera.release();
-	        camera=null;
-	    }
 		// The activity is about to be destroyed.
-	}
-	
-	private boolean safeCameraOpen() {
-	    boolean qOpened = false;
-	    try {
-	        releaseCameraAndPreview();
-	        camera = Camera.open();
-	        qOpened = (camera != null);
-	    } catch (Exception e) {
-	        Log.e(getString(R.string.app_name), "failed to open Camera");
-	        e.printStackTrace();
-	    }
-
-		
-		camera.setDisplayOrientation(90);
-		Camera.Parameters param;
-		param = camera.getParameters();
-		// modify parameter
-		// param.setPreviewFpsRange(TRIM_MEMORY_RUNNING_LOW,
-		// TRIM_MEMORY_COMPLETE);
-		param.setPreviewSize(param.getPreviewSize().width,
-				param.getPreviewSize().height);
-		camera.setParameters(param);
-		
-		try {
-			camera.setPreviewDisplay(surfaceHolder);
-			camera.startPreview();
-		} catch (IOException e) {
-			Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
-		}
-		
-		// Debug stuff
-		/*
-		debugtxt1.setText("Width: ");
-		debugtxt11.setText("" + param.getPreviewSize().width);
-		debugtxt2.setText("Height: ");
-		debugtxt21.setText("" + param.getPreviewSize().height);
-		*/
-		debugtxt1.setText("Orientation: ");
-		switch(getResources().getConfiguration().orientation){
-		case 1:
-			debugtxt11.setText("Potrait");
-			break;
-		case 2:
-			debugtxt11.setText("Landscape");
-			break;
-		default:
-			break;
-		}
-		
-	    return qOpened;    
-	}
-
-	private void releaseCameraAndPreview() {
-	    if (camera != null) {
-	        camera.release();
-	        camera = null;
-	    }
-	}
-
-	public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2, int arg3) {
-		// TODO Auto-generated method stub
-	}
-
-	public void surfaceCreated(SurfaceHolder holder) {
-		// TODO Auto-generated method stub
-	}
-
-	public void surfaceDestroyed(SurfaceHolder holder) {
-		// TODO Auto-generated method stub
 	}
 
 }
